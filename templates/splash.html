@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Career Search - Welcome</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        // Simple auto-redirect to login after a short delay
+        window.addEventListener("load", function () {
+            setTimeout(function () {
+                window.location.href = "{{ url_for('login') }}";
+            }, 2000); // 2 seconds
+        });
+    </script>
+</head>
+<body class="splash-body">
+    <div class="splash-content">
+        <div class="splash-logo-circle">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="splash-logo-icon">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+        </div>
+        <h1 class="splash-title">Career Search</h1>
+        <p class="splash-subtitle">Discover your path to success.</p>
+
+        <div class="splash-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+</body>
+</html>
+
+

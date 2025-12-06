@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Career Personality Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script defer src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+</head>
+<body class="home-body">
+    <header class="home-header">
+        <div class="home-header-left">
+            <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
+        </div>
+    </header>
+
+    <main class="quiz-main">
+        <section class="quiz-card">
+            <div class="quiz-header-row">
+                <div class="quiz-title-small">Career Personality Quiz</div>
+                <div class="quiz-timer">
+                    <span id="quiz-time">0s</span>
+                </div>
+            </div>
+
+            <div class="quiz-progress-bar">
+                <div id="quiz-progress-fill"></div>
+            </div>
+
+            <div class="quiz-question-meta">
+                <span id="quiz-question-counter">1/10</span>
+            </div>
+
+            <div class="quiz-question-box">
+                <div class="quiz-question-number">Question <span id="quiz-question-number">1</span></div>
+                <div id="quiz-question-text" class="quiz-question-text">
+                    Loading question...
+                </div>
+            </div>
+
+            <div id="quiz-options" class="quiz-options">
+                <!-- Options injected by JS -->
+            </div>
+
+            <button id="quiz-next-btn" class="quiz-next-btn" disabled>
+                Next Question →
+            </button>
+
+            <div id="quiz-result" class="quiz-result hidden">
+                <h2>Your Career Personality Report</h2>
+                <p id="quiz-result-text"></p>
+
+                <section id="quiz-report" class="quiz-report">
+                    <div class="quiz-report-header">
+                        <p class="quiz-report-subtitle">
+                            Based on your responses, here is your unique profile.
+                        </p>
+                    </div>
+
+                    <div class="quiz-traits-section">
+                        <h3 class="quiz-section-title">Your Personality Traits</h3>
+                        <div class="quiz-traits-grid">
+                            <div class="trait-card">
+                                <div class="trait-label">Analytical</div>
+                                <div class="trait-bar-track">
+                                    <div id="trait-analytical-bar" class="trait-bar-fill"></div>
+                                </div>
+                                <div id="trait-analytical-value" class="trait-percent">0%</div>
+                            </div>
+                            <div class="trait-card">
+                                <div class="trait-label">Creative</div>
+                                <div class="trait-bar-track">
+                                    <div id="trait-creative-bar" class="trait-bar-fill"></div>
+                                </div>
+                                <div id="trait-creative-value" class="trait-percent">0%</div>
+                            </div>
+                            <div class="trait-card">
+                                <div class="trait-label">Social</div>
+                                <div class="trait-bar-track">
+                                    <div id="trait-social-bar" class="trait-bar-fill"></div>
+                                </div>
+                                <div id="trait-social-value" class="trait-percent">0%</div>
+                            </div>
+                            <div class="trait-card">
+                                <div class="trait-label">Practical</div>
+                                <div class="trait-bar-track">
+                                    <div id="trait-practical-bar" class="trait-bar-fill"></div>
+                                </div>
+                                <div id="trait-practical-value" class="trait-percent">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-careers-section">
+                        <h3 class="quiz-section-title">Suggested Career Paths</h3>
+                        <p class="quiz-report-subtitle">
+                            Based on your personality, here are some careers that might be a great fit for you:
+                        </p>
+                        <div id="quiz-career-cards" class="quiz-careers-grid">
+                            <!-- Filled by JavaScript -->
+                        </div>
+                        <div class="quiz-consult-text">
+                            Want to explore more? Book a consultation with our career experts to discuss your results in detail.
+                        </div>
+                    </div>
+                </section>
+
+                <div class="quiz-submit-section">
+                    <button id="quiz-submit-btn" class="quiz-submit-btn">
+                        Submit Quiz Results
+                    </button>
+                    <div id="quiz-submit-message" class="quiz-submit-message hidden"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
+
+

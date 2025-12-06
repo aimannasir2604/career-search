@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consult Our Experts</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="home-body">
+    <header class="home-header">
+        <div class="home-header-left">
+            <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
+        </div>
+    </header>
+
+    <main class="consult-main">
+        <section class="consult-card">
+            <h1 class="consult-title">Consult Our Experts</h1>
+            <p class="consult-subtitle">
+                Book a one-on-one session with our experienced career counselors.
+            </p>
+
+            <div class="consult-grid">
+                <article class="consult-profile">
+                    <div class="consult-profile-top">
+                        <div class="consult-avatar">SJ</div>
+                        <div>
+                            <div class="consult-name">Dr. Sarah Johnson</div>
+                            <div class="consult-role">PhD in Career Counseling</div>
+                            <div class="consult-exp-badge">15+ years experience</div>
+                        </div>
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Specialization:</strong> Career Guidance &amp; Planning
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Available:</strong> Mon–Fri, 9 AM – 5 PM
+                    </div>
+                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='sj') }}">
+                        Book Appointment
+                    </a>
+                </article>
+
+                <article class="consult-profile">
+                    <div class="consult-profile-top">
+                        <div class="consult-avatar">MC</div>
+                        <div>
+                            <div class="consult-name">Dr. Rizwan Javed</div>
+                            <div class="consult-role">MSc Psychology</div>
+                            <div class="consult-exp-badge">12+ years experience</div>
+                        </div>
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Specialization:</strong> Student Development
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Available:</strong> Tue–Sat, 10 AM – 6 PM
+                    </div>
+                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='mc') }}">
+                        Book Appointment
+                    </a>
+                </article>
+
+                <article class="consult-profile">
+                    <div class="consult-profile-top">
+                        <div class="consult-avatar">ER</div>
+                        <div>
+                            <div class="consult-name">Dr. Emily Rodriguez</div>
+                            <div class="consult-role">PhD in Educational Psychology</div>
+                            <div class="consult-exp-badge">10+ years experience</div>
+                        </div>
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Specialization:</strong> Academic &amp; Career Counseling
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Available:</strong> Mon–Thu, 2 PM – 8 PM
+                    </div>
+                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='er') }}">
+                        Book Appointment
+                    </a>
+                </article>
+
+                <article class="consult-profile">
+                    <div class="consult-profile-top">
+                        <div class="consult-avatar">JW</div>
+                        <div>
+                            <div class="consult-name">Dr. James Williams</div>
+                            <div class="consult-role">MBA &amp; Career Coach Certification</div>
+                            <div class="consult-exp-badge">8+ years experience</div>
+                        </div>
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Specialization:</strong> Industry Insights &amp; Planning
+                    </div>
+                    <div class="consult-detail">
+                        <strong>Available:</strong> Wed–Sun, 11 AM – 7 PM
+                    </div>
+                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='jw') }}">
+                        Book Appointment
+                    </a>
+                </article>
+            </div>
+            
+        </section>
+    </main>
+</body>
+</html>
+
+

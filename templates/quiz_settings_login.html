@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Settings - Admin Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="home-body">
+    <header class="home-header">
+        <div class="home-header-left">
+            <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
+        </div>
+        <div class="home-header-center">
+            <span class="home-welcome-text">Quiz Settings - Admin Login</span>
+        </div>
+    </header>
+
+    <main class="quiz-login-main">
+        <section class="quiz-login-card">
+            <h1 class="quiz-login-title">Admin Access Required</h1>
+            <p class="quiz-login-subtitle">
+                Enter the admin email and password to manage quiz questions and counselor profiles.
+            </p>
+
+            {% if error %}
+            <div class="quiz-login-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" class="quiz-login-form">
+                <div class="quiz-login-field">
+                    <label for="email">Admin Email</label>
+                    <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        placeholder="admin email"
+                        required
+                    />
+                </div>
+                <div class="quiz-login-field">
+                    <label for="password">Password</label>
+                    <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        placeholder="password"
+                        required
+                    />
+                </div>
+                <button type="submit" class="quiz-login-btn">Login as Admin</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
+
+

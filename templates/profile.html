@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="home-body">
+    <header class="home-header">
+        <div class="home-header-left">
+            <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
+        </div>
+        <div class="home-header-center">
+            <span class="home-welcome-text">{{ profile.full_name }}</span>
+        </div>
+    </header>
+
+    <main class="profile-main">
+        <section class="profile-layout">
+            <!-- Left sidebar -->
+            <aside class="profile-sidebar">
+                <div class="profile-avatar-circle">
+                    <span class="profile-avatar-text">{{ profile.initials }}</span>
+                </div>
+                <div class="profile-name">{{ profile.full_name }}</div>
+                <div class="profile-class">{{ profile.student_class }}</div>
+
+                <div class="profile-id-badge">
+                    {{ profile.student_id }}
+                </div>
+
+                <div class="profile-gpa-card">
+                    <div class="profile-gpa-label">Current GPA</div>
+                    <div class="profile-gpa-value">{{ profile.current_gpa }}</div>
+                </div>
+
+                <div class="profile-quiz-card">
+                    <div class="profile-quiz-status">
+                        {% if profile.quiz_completed %}Quiz Completed{% else %}Quiz not completed{% endif %}
+                    </div>
+                    <div class="profile-quiz-subtext">
+                        Career personality assessed
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right content -->
+            <section class="profile-content">
+                <!-- Personal information -->
+                <form method="post" class="profile-card profile-form">
+                    <div class="profile-card-header">
+                        <h2>Personal Information</h2>
+                        <div class="profile-header-actions">
+                            <a href="{{ url_for('profile') }}" class="profile-cancel-btn">
+                                Cancel
+                            </a>
+                            <button type="submit" class="profile-edit-btn">Save Changes</button>
+                        </div>
+                    </div>
+                        <div class="profile-form-grid">
+                            <div class="profile-field">
+                                <label>Full Name</label>
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    value="{{ profile.full_name }}"
+                                    required
+                                />
+                            </div>
+                            <div class="profile-field">
+                                <label>Father's Name</label>
+                                <input
+                                    type="text"
+                                    name="father_name"
+                                    value="{{ profile.father_name }}"
+                                />
+                            </div>
+                            <div class="profile-field">
+                                <label>Age</label>
+                                <input type="number" name="age" value="{{ profile.age }}" />
+                            </div>
+                            <div class="profile-field">
+                                <label>Class</label>
+                                <input
+                                    type="text"
+                                    name="student_class"
+                                    value="{{ profile.student_class }}"
+                                />
+                            </div>
+                            <div class="profile-field full-width">
+                                <label>Address</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value="{{ profile.address }}"
+                                />
+                            </div>
+                        </div>
+                </form>
+
+                <!-- Appointment history -->
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <h2>Appointment History</h2>
+                    </div>
+                    {% if profile.appointments %}
+                    {% for appt in profile.appointments %}
+                    <div class="profile-appointment-row">
+                        <div>
+                            <div class="profile-appointment-doctor">{{ appt.counselor }}</div>
+                            <div class="profile-appointment-date">{{ appt.date }}</div>
+                            <div class="profile-appointment-mode">Mode: {{ appt.mode }}</div>
+                        </div>
+                        <div class="profile-appointment-status">{{ appt.status }}</div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="profile-empty-text">No appointments booked yet.</div>
+                    {% endif %}
+                </div>
+
+                <!-- Career personality -->
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <h2>Career Personality</h2>
+                    </div>
+                    <div class="profile-traits-grid">
+                        <div class="profile-trait-card">
+                            <div class="profile-trait-label">Analytical</div>
+                            <div class="profile-trait-value">
+                                {{ profile.personality.analytical }}%
+                            </div>
+                        </div>
+                        <div class="profile-trait-card">
+                            <div class="profile-trait-label">Creative</div>
+                            <div class="profile-trait-value">
+                                {{ profile.personality.creative }}%
+                            </div>
+                        </div>
+                        <div class="profile-trait-card">
+                            <div class="profile-trait-label">Social</div>
+                            <div class="profile-trait-value">
+                                {{ profile.personality.social }}%
+                            </div>
+                        </div>
+                        <div class="profile-trait-card">
+                            <div class="profile-trait-label">Practical</div>
+                            <div class="profile-trait-value">
+                                {{ profile.personality.practical }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-recommended">
+                        <div class="profile-recommended-label">Recommended Careers:</div>
+                        <div class="profile-recommended-chips">
+                            {% for career in profile.recommended_careers %}
+                            <span class="profile-chip">{{ career }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+</body>
+</html>
+
+

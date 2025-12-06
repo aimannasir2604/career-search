@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Appointment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="home-body">
+    <header class="home-header">
+        <div class="home-header-left">
+            <a href="{{ url_for('consultation') }}" class="back-link">← Back</a>
+        </div>
+        <div class="home-header-center">
+            <span class="home-welcome-text">Book Appointment</span>
+        </div>
+    </header>
+
+    <main class="book-main">
+        <section class="book-card">
+            <div class="book-layout">
+                <!-- Left column: select consultant -->
+                <div class="book-left">
+                    <h2 class="book-section-title">Select Consultant</h2>
+                    <div class="book-consultant-list">
+                        {% for cid, c in counselors.items() %}
+                        <a
+                            href="{{ url_for('book_appointment', counselor_id=c.id) }}"
+                            class="book-consultant-card {% if c.id == selected.id %}active{% endif %}"
+                        >
+                            <div class="book-consultant-avatar">{{ c.initials }}</div>
+                            <div class="book-consultant-info">
+                                <div class="book-consultant-name">{{ c.name }}</div>
+                                <div class="book-consultant-role">{{ c.role }}</div>
+                                <div class="book-consultant-exp">{{ c.experience }}</div>
+                                <div class="book-consultant-avail">
+                                    <span class="label">Available:</span> {{ c.availability }}
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Right column: appointment details -->
+                <div class="book-right">
+                    <h2 class="book-section-title">Appointment Details</h2>
+
+                    <div class="book-with-card">
+                        <div class="book-consultant-avatar small">{{ selected.initials }}</div>
+                        <div>
+                            <div class="book-with-label">Booking with</div>
+                            <div class="book-consultant-name">{{ selected.name }}</div>
+                        </div>
+                    </div>
+
+                    <form method="post" class="book-form">
+                        <div class="book-field-group">
+                            <label for="date">Select Date</label>
+                            <input type="date" id="date" name="date" required />
+                        </div>
+
+                        <div class="book-field-group">
+                            <label for="time">Select Time</label>
+                            <select id="time" name="time" required>
+                                <option value="">Choose a time slot</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:30 AM">10:30 AM</option>
+                                <option value="12:00 PM">12:00 PM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:30 PM">03:30 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                            </select>
+                        </div>
+
+                        <div class="book-field-group">
+                            <label>Consultation Mode</label>
+                            <div class="book-mode-toggle">
+                                <label class="mode-option">
+                                    <input type="radio" name="mode" value="video" checked />
+                                    <span>Video Call</span>
+                                </label>
+                                <label class="mode-option">
+                                    <input type="radio" name="mode" value="audio" />
+                                    <span>Audio Call</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="book-confirm-btn">
+                            Confirm Booking
+                        </button>
+
+                        {% if confirmed %}
+                        <div class="book-confirm-message">
+                            Your appointment with <strong>{{ selected.name }}</strong> on
+                            <strong>{{ selected_date }}</strong> at
+                            <strong>{{ selected_time }}</strong> ({{ mode|capitalize }} Call)
+                            has been booked.
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
+
+

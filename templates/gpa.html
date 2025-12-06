@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPA Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        let subjects = [];
+        let editingId = null;
+
+        // Load subjects from database on page load
+        async function loadSubjects() {
+            try {
+                const response = await fetch('/api/gpa/subjects');
+                if (!response.ok) {
+                    throw new Error('Failed to load subjects');
+                }
+                subjects = await response.json();
+                renderSubjects();
+                // Calculate GPA after rendering
+                setTimeout(calculateGPA, 50);
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                // Show empty state on error
+                const container = document.getElementById("subjects-container");
+                if (container) {
+                    container.innerHTML = '<div class="gpa-empty-message">Error loading subjects. Please refresh the page.</div>';
+                }
+            }
+        }
+
+        // Render all subjects
+        function renderSubjects() {
+            const container = document.getElementById("subjects-container");
+            container.innerHTML = '';
+            
+            if (subjects.length === 0) {
+                container.innerHTML = '<div class="gpa-empty-message">No subjects added yet. Click "Add Subject" to get started.</div>';
+                return;
+            }
+
+            subjects.forEach((subject, index) => {
+                const row = createSubjectRow(subject, index + 1);
+                container.appendChild(row);
+            });
+        }
+
+        // Create a subject row element
+        function createSubjectRow(subject, index) {
+            const row = document.createElement("div");
+            row.className = "gpa-row";
+            const subjectId = subject.id || 'new';
+            row.dataset.id = subjectId;
+            
+            // Check if this subject is being edited
+            const isEditing = (subject.id === null && editingId === 'new') || editingId === subject.id;
+            const isReadOnly = !isEditing && editingId !== null;
+            
+            row.innerHTML = `
+                <div class="gpa-row-header">
+                    <span>Subject ${index}</span>
+                    <div class="gpa-row-actions">
+                        ${isEditing ? `
+                            <button type="button" class="gpa-btn-save" onclick="saveSubject(${subject.id !== null ? subject.id : "'new'"})" title="Save">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                            </button>
+                            <button type="button" class="gpa-btn-cancel" onclick="cancelEdit()" title="Cancel">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        ` : `
+                            <button type="button" class="gpa-btn-edit" onclick="editSubject(${subject.id !== null ? subject.id : 'null'})" title="Edit" ${isReadOnly ? 'disabled' : ''}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                            <button type="button" class="gpa-btn-delete" onclick="deleteSubject(${subject.id !== null ? subject.id : 'null'})" title="Delete" ${isReadOnly || subject.id === null ? 'disabled' : ''}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        `}
+                    </div>
+                </div>
+                <div class="gpa-row-fields">
+                    <div class="gpa-field">
+                        <label>Subject Name</label>
+                        <input type="text" 
+                               name="subject_name" 
+                               value="${escapeHtml(subject.subject_name)}" 
+                               placeholder="e.g., Mathematics"
+                               ${isEditing ? '' : 'readonly'}
+                               data-field="subject_name" />
+                    </div>
+                    <div class="gpa-field">
+                        <label>Total Marks</label>
+                        <input type="number" 
+                               name="total_marks" 
+                               value="${subject.total_marks}" 
+                               min="1"
+                               ${isEditing ? '' : 'readonly'}
+                               data-field="total_marks" />
+                    </div>
+                    <div class="gpa-field">
+                        <label>Obtained Marks</label>
+                        <input type="number" 
+                               name="obtained_marks" 
+                               value="${subject.obtained_marks}" 
+                               min="0"
+                               ${isEditing ? '' : 'readonly'}
+                               data-field="obtained_marks" />
+                    </div>
+                </div>
+            `;
+            return row;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Add a new subject
+        async function addSubject() {
+            if (editingId !== null) {
+                alert('Please finish editing the current subject first.');
+                return;
+            }
+
+            const newSubject = {
+                id: null,
+                subject_name: '',
+                total_marks: 100,
+                obtained_marks: 0
+            };
+            
+            subjects.push(newSubject);
+            editingId = 'new';
+            renderSubjects();
+            
+            // Focus on the first input of the new row
+            setTimeout(() => {
+                const newRow = document.querySelector('.gpa-row:last-child');
+                if (newRow) {
+                    const input = newRow.querySelector('input[name="subject_name"]');
+                    if (input) input.focus();
+                }
+            }, 100);
+        }
+
+        // Edit a subject
+        function editSubject(id) {
+            if (editingId !== null && editingId !== id) {
+                alert('Please finish editing the current subject first.');
+                return;
+            }
+            // Handle null id for new subjects
+            editingId = (id === null || id === 'null') ? 'new' : id;
+            renderSubjects();
+        }
+
+        // Cancel editing
+        function cancelEdit() {
+            if (editingId === 'new') {
+                // Remove the new subject if canceling
+                subjects = subjects.filter(s => s.id !== null && s.id !== undefined);
+            }
+            editingId = null;
+            // Reload to get original values from database
+            loadSubjects();
+        }
+
+        // Save a subject (create or update)
+        async function saveSubject(id) {
+            // Handle string 'new' or null/undefined
+            const isNew = id === 'new' || id === null || id === undefined || id === 'null';
+            const rowId = isNew ? 'new' : id;
+            const row = document.querySelector(`.gpa-row[data-id="${rowId}"]`);
+            if (!row) {
+                console.error('Row not found for id:', rowId);
+                return;
+            }
+
+            const subjectName = row.querySelector('input[name="subject_name"]').value.trim();
+            const totalMarks = parseFloat(row.querySelector('input[name="total_marks"]').value);
+            const obtainedMarks = parseFloat(row.querySelector('input[name="obtained_marks"]').value);
+
+            if (!subjectName) {
+                alert('Please enter a subject name.');
+                return;
+            }
+
+            if (totalMarks <= 0) {
+                alert('Total marks must be greater than 0.');
+                return;
+            }
+
+            if (obtainedMarks < 0 || obtainedMarks > totalMarks) {
+                alert('Obtained marks must be between 0 and total marks.');
+                return;
+            }
+
+            try {
+                let response;
+                if (isNew) {
+                    // Create new subject
+                    response = await fetch('/api/gpa/subjects', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            subject_name: subjectName,
+                            total_marks: totalMarks,
+                            obtained_marks: obtainedMarks
+                        })
+                    });
+                } else {
+                    // Update existing subject
+                    response = await fetch(`/api/gpa/subjects/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            subject_name: subjectName,
+                            total_marks: totalMarks,
+                            obtained_marks: obtainedMarks
+                        })
+                    });
+                }
+
+                if (response.ok) {
+                    editingId = null;
+                    await loadSubjects();
+                    calculateGPA();
+                } else {
+                    const error = await response.json();
+                    alert('Error saving subject: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving subject:', error);
+                alert('Error saving subject. Please try again.');
+            }
+        }
+
+        // Delete a subject
+        async function deleteSubject(id) {
+            // Don't allow deleting new/unsaved subjects
+            if (id === null || id === 'null' || id === 'new') {
+                alert('Cannot delete an unsaved subject. Please cancel instead.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this subject?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/gpa/subjects/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadSubjects();
+                    calculateGPA();
+                } else {
+                    const error = await response.json();
+                    alert('Error deleting subject: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error deleting subject:', error);
+                alert('Error deleting subject. Please try again.');
+            }
+        }
+
+        // Calculate GPA
+        function calculateGPA() {
+            const rows = document.querySelectorAll(".gpa-row");
+            let totalObtained = 0;
+            let totalPossible = 0;
+
+            rows.forEach(row => {
+                const totalInput = row.querySelector('input[name="total_marks"]');
+                const obtainedInput = row.querySelector('input[name="obtained_marks"]');
+                
+                if (totalInput && obtainedInput) {
+                    const total = parseFloat(totalInput.value) || 0;
+                    const obtained = parseFloat(obtainedInput.value) || 0;
+                    if (total > 0) {
+                        totalPossible += total;
+                        totalObtained += obtained;
+                    }
+                }
+            });
+
+            const resultsSection = document.getElementById("gpa-results-section");
+            const percentageEl = document.getElementById("percentage-value");
+            const gpaEl = document.getElementById("gpa-value");
+
+            if (totalPossible === 0) {
+                resultsSection.classList.add("hidden");
+                return;
+            }
+
+            const percentage = (totalObtained / totalPossible) * 100;
+            const gpa = Math.min(4.0, (percentage / 25)); // simple 4.0 scale approximation, capped at 4.0
+
+            percentageEl.textContent = `${percentage.toFixed(2)}%`;
+            gpaEl.textContent = gpa.toFixed(2);
+            resultsSection.classList.remove("hidden");
+        }
+
+        // Auto-calculate GPA when values change
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSubjects();
+            
+            // Add event listener for input changes to auto-calculate (using event delegation)
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input[name="total_marks"], input[name="obtained_marks"]')) {
+                    // Only calculate if not in edit mode
+                    if (editingId === null) {
+                        calculateGPA();
+                    }
+                }
+            });
+        });
+    </script>
+</head>
+<body class="home-body">
+    <header class="home-header">
+        <div class="home-header-left">
+            <a href="{{ url_for('home') }}" class="back-link">← Back to Home</a>
+        </div>
+    </header>
+
+    <main class="gpa-main">
+        <section class="gpa-card">
+            <div class="gpa-card-header">
+                <div class="gpa-icon-circle">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                        <line x1="15" y1="3" x2="15" y2="21"></line>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="3" y1="15" x2="21" y2="15"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="gpa-title">GPA Calculator</h1>
+                    <p class="gpa-subtitle">Calculate your grade point average</p>
+                </div>
+            </div>
+
+            <div id="subjects-container" class="gpa-subjects">
+                <!-- Subjects will be loaded here -->
+            </div>
+
+            <button type="button" class="gpa-add-row" onclick="addSubject()">
+                + Add Subject
+            </button>
+
+            <button type="button" class="gpa-calc-btn" onclick="calculateGPA()">
+                Calculate GPA
+            </button>
+
+            <div id="gpa-results-section" class="gpa-results hidden">
+                <div class="gpa-results-title">Your Results</div>
+                <div class="gpa-results-grid">
+                    <div class="gpa-results-card">
+                        <div class="gpa-results-label">Percentage</div>
+                        <div id="percentage-value" class="gpa-results-value">0.00%</div>
+                    </div>
+                    <div class="gpa-results-card">
+                        <div class="gpa-results-label">GPA (4.0 Scale)</div>
+                        <div id="gpa-value" class="gpa-results-value">0.00</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
