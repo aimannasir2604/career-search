@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 import os
 import sqlite3
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -152,6 +153,20 @@ def ensure_admin_user():
             time_taken INTEGER NOT NULL,
             total_questions INTEGER NOT NULL,
             submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS appointments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            counselor_id TEXT NOT NULL,
+            appointment_date TEXT NOT NULL,
+            appointment_time TEXT NOT NULL,
+            mode TEXT NOT NULL,
+            comments TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(counselor_id, appointment_date, appointment_time)
         )
         """
     )
@@ -378,7 +393,133 @@ def consultation():
 
 @app.route("/consultation/book/<counselor_id>", methods=["GET", "POST"])
 def book_appointment(counselor_id):
-    # Load consultants from database
+    # Get all consultants for the template
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT counselor_id, initials, name, role, specialization, availability, experience FROM consultants ORDER BY id")
+    all_consultants = {}
+    for r in cur.fetchall():
+        all_consultants[r["counselor_id"]] = {
+            "id": r["counselor_id"],
+            "initials": r["initials"],
+            "name": r["name"],
+            "role": r["role"],
+            "specialization": r["specialization"],
+            "availability": r["availability"],
+            "experience": r["experience"],
+        }
+    conn.close()
+    if not all_consultants:
+        all_consultants = COUNSELORS
+    
+    # Handle multi-counsellor selection
+    if counselor_id == "multi":
+        today_date = datetime.now().strftime("%Y-%m-%d")
+        
+        if request.method == "POST":
+            counselor_ids = request.form.getlist("counselor_ids")
+            if not counselor_ids:
+                return redirect(url_for("consultation"))
+            
+            selected_counselors = []
+            for cid in counselor_ids:
+                if cid in all_consultants:
+                    selected_counselors.append(all_consultants[cid])
+            
+            # Check if this is a confirmation submission
+            if request.form.get("confirm") == "true":
+                # Process bookings
+                bookings = []
+                comments = request.form.get("comments", "").strip()
+                conn = get_db_connection()
+                cur = conn.cursor()
+                
+                # Check for time slot conflicts
+                time_slots = {}
+                for cid in counselor_ids:
+                    date_key = request.form.get(f"date_{cid}")
+                    time_key = request.form.get(f"time_{cid}")
+                    if date_key and time_key:
+                        slot_key = f"{date_key}_{time_key}"
+                        if slot_key in time_slots:
+                            conn.close()
+                            flash("Error: Multiple counselors cannot be booked for the same time slot.", "error")
+                            return render_template(
+                                "book_appointment.html",
+                                counselors=all_consultants,
+                                selected_counselors=selected_counselors,
+                                selected=None,
+                                confirmed=False,
+                                today_date=today_date,
+                            )
+                        time_slots[slot_key] = cid
+                
+                # Save bookings to database
+                for cid in counselor_ids:
+                    date_val = request.form.get(f"date_{cid}")
+                    time_val = request.form.get(f"time_{cid}")
+                    mode_val = request.form.get(f"mode_{cid}", "video")
+                    
+                    if date_val and time_val:
+                        try:
+                            cur.execute(
+                                """
+                                INSERT INTO appointments (counselor_id, appointment_date, appointment_time, mode, comments)
+                                VALUES (?, ?, ?, ?, ?)
+                                """,
+                                (cid, date_val, time_val, mode_val, comments)
+                            )
+                            conn.commit()
+                            
+                            # Format date for display
+                            date_obj = datetime.strptime(date_val, "%Y-%m-%d")
+                            date_formatted = date_obj.strftime("%A, %B %d, %Y")
+                            
+                            bookings.append({
+                                "counselor": all_consultants[cid],
+                                "date": date_val,
+                                "date_formatted": date_formatted,
+                                "time": time_val,
+                                "mode": mode_val
+                            })
+                        except sqlite3.IntegrityError:
+                            conn.rollback()
+                            flash(f"Error: Time slot {time_val} on {date_val} is already booked for {all_consultants[cid]['name']}.", "error")
+                            conn.close()
+                            return render_template(
+                                "book_appointment.html",
+                                counselors=all_consultants,
+                                selected_counselors=selected_counselors,
+                                selected=None,
+                                confirmed=False,
+                                today_date=today_date,
+                            )
+                
+                conn.close()
+                
+                if bookings:
+                    return render_template(
+                        "book_appointment.html",
+                        counselors=all_consultants,
+                        bookings=bookings,
+                        comments=comments,
+                        confirmed=True,
+                        today_date=today_date,
+                    )
+            
+            # Show booking form with selected counsellors
+            return render_template(
+                "book_appointment.html",
+                counselors=all_consultants,
+                selected_counselors=selected_counselors,
+                selected=None,
+                confirmed=False,
+                today_date=today_date,
+            )
+        else:
+            return redirect(url_for("consultation"))
+    
+    # Single counsellor selection (backward compatibility)
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT counselor_id, initials, name, role, specialization, availability, experience FROM consultants WHERE counselor_id = ?", (counselor_id,))
@@ -399,45 +540,72 @@ def book_appointment(counselor_id):
         # Fallback to COUNSELORS
         counselor = COUNSELORS.get(counselor_id, COUNSELORS.get("sj", {}))
     
-    # Get all consultants for the template
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT counselor_id, initials, name, role, specialization, availability, experience FROM consultants ORDER BY id")
-    all_consultants = {}
-    for r in cur.fetchall():
-        all_consultants[r["counselor_id"]] = {
-            "id": r["counselor_id"],
-            "initials": r["initials"],
-            "name": r["name"],
-            "role": r["role"],
-            "specialization": r["specialization"],
-            "availability": r["availability"],
-            "experience": r["experience"],
-        }
-    conn.close()
-    if not all_consultants:
-        all_consultants = COUNSELORS
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    
     if request.method == "POST":
-        # In a real app, you would save this booking to the database.
-        # For now we just show a basic confirmation on the same page.
-        selected_date = request.form.get("date")
-        selected_time = request.form.get("time")
-        mode = request.form.get("mode", "video")
-        return render_template(
-            "book_appointment.html",
-            counselors=all_consultants,
-            selected=counselor,
-            confirmed=True,
-            selected_date=selected_date,
-            selected_time=selected_time,
-            mode=mode,
-        )
+        if request.form.get("confirm") == "true":
+            # Process booking
+            selected_date = request.form.get("date")
+            selected_time = request.form.get("time")
+            mode = request.form.get("mode", "video")
+            comments = request.form.get("comments", "").strip()
+            
+            # Save to database
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    """
+                    INSERT INTO appointments (counselor_id, appointment_date, appointment_time, mode, comments)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (counselor_id, selected_date, selected_time, mode, comments)
+                )
+                conn.commit()
+                conn.close()
+                
+                # Format date for display
+                date_obj = datetime.strptime(selected_date, "%Y-%m-%d")
+                date_formatted = date_obj.strftime("%A, %B %d, %Y")
+                
+                bookings = [{
+                    "counselor": counselor,
+                    "date": selected_date,
+                    "date_formatted": date_formatted,
+                    "time": selected_time,
+                    "mode": mode
+                }]
+                
+                return render_template(
+                    "book_appointment.html",
+                    counselors=all_consultants,
+                    bookings=bookings,
+                    comments=comments,
+                    confirmed=True,
+                    today_date=today_date,
+                )
+            except sqlite3.IntegrityError:
+                conn.rollback()
+                conn.close()
+                flash(f"Error: Time slot {selected_time} on {selected_date} is already booked for {counselor['name']}.", "error")
+                return render_template(
+                    "book_appointment.html",
+                    counselors=all_consultants,
+                    selected=counselor,
+                    selected_counselors=None,
+                    confirmed=False,
+                    today_date=today_date,
+                )
 
     return render_template(
         "book_appointment.html",
         counselors=all_consultants,
         selected=counselor,
+        selected_counselors=None,
         confirmed=False,
+        today_date=today_date,
     )
 
 
@@ -660,6 +828,65 @@ def delete_consultant(consultant_id):
         return jsonify({"error": "Consultant not found"}), 404
     
     return jsonify({"message": "Consultant deleted successfully"}), 200
+
+
+@app.route("/api/quiz/submit", methods=["POST"])
+def submit_quiz():
+    """Submit quiz results"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ["analytical_score", "creative_score", "social_score", "practical_score", "dominant_trait", "time_taken", "total_questions"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Validate scores are integers
+        scores = {
+            "analytical": int(data["analytical_score"]),
+            "creative": int(data["creative_score"]),
+            "social": int(data["social_score"]),
+            "practical": int(data["practical_score"])
+        }
+        
+        # Validate dominant trait
+        if data["dominant_trait"] not in ["analytical", "creative", "social", "practical"]:
+            return jsonify({"error": "Invalid dominant trait"}), 400
+        
+        # Save to database
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO quiz_submissions 
+            (analytical_score, creative_score, social_score, practical_score, dominant_trait, time_taken, total_questions)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                scores["analytical"],
+                scores["creative"],
+                scores["social"],
+                scores["practical"],
+                data["dominant_trait"],
+                int(data["time_taken"]),
+                int(data["total_questions"])
+            )
+        )
+        conn.commit()
+        submission_id = cur.lastrowid
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "message": "Quiz results submitted successfully",
+            "submission_id": submission_id
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({"error": f"Invalid data format: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Error submitting quiz: {str(e)}"}), 500
 
 
 if __name__ == "__main__":

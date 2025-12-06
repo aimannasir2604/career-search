@@ -32,7 +32,9 @@ const totalQuestions = quizQuestions.length;
 
 let currentIndex = 0;
 let selectedTraitCounts = { analytical: 0, creative: 0, social: 0, practical: 0 };
+let userAnswers = []; // Store user's answers for review
 let timerSeconds = 0;
+let quizCompleted = false;
 
 function startQuizTimer() {
   const timeEl = document.getElementById("quiz-time");
@@ -50,6 +52,12 @@ function renderQuestion() {
   const counterEl = document.getElementById("quiz-question-counter");
   const nextBtn = document.getElementById("quiz-next-btn");
   const progressFill = document.getElementById("quiz-progress-fill");
+  const reviewSection = document.getElementById("quiz-review");
+  const resultSection = document.getElementById("quiz-result");
+
+  // Hide review and result sections when showing questions
+  if (reviewSection) reviewSection.classList.add("hidden");
+  if (resultSection) resultSection.classList.add("hidden");
 
   questionNumberEl.textContent = currentIndex + 1;
   questionTextEl.textContent = question.text;
@@ -60,12 +68,23 @@ function renderQuestion() {
 
   optionsContainer.innerHTML = "";
   nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex < totalQuestions - 1 ? "Next Question →" : "Finish Quiz →";
+
+  // Check if user already answered this question
+  const existingAnswer = userAnswers[currentIndex];
 
   question.options.forEach((opt, index) => {
     const btn = document.createElement("button");
     btn.className = "quiz-option-btn";
     btn.textContent = opt.text;
     btn.dataset.trait = opt.trait;
+    
+    // Pre-select if user already answered
+    if (existingAnswer && existingAnswer.trait === opt.trait) {
+      btn.classList.add("selected");
+      nextBtn.disabled = false;
+    }
+    
     btn.addEventListener("click", () => {
       document
         .querySelectorAll(".quiz-option-btn")
@@ -82,26 +101,126 @@ function handleNextQuestion() {
   if (!selected) return;
 
   const trait = selected.dataset.trait;
-  selectedTraitCounts[trait] += 1;
+  const questionText = quizQuestions[currentIndex].text;
+  const selectedText = selected.textContent;
+
+  // Store answer
+  userAnswers[currentIndex] = {
+    questionIndex: currentIndex,
+    questionText: questionText,
+    selectedText: selectedText,
+    trait: trait
+  };
 
   if (currentIndex < totalQuestions - 1) {
     currentIndex += 1;
     renderQuestion();
   } else {
-    showResult();
+    // All questions answered - show review section
+    showReviewSection();
   }
 }
 
-function showResult() {
+function showReviewSection() {
+  const reviewSection = document.getElementById("quiz-review");
+  const nextBtn = document.getElementById("quiz-next-btn");
+  const progressFill = document.getElementById("quiz-progress-fill");
+  
+  // Hide quiz question section
+  document.querySelector(".quiz-question-box").style.display = "none";
+  document.getElementById("quiz-options").style.display = "none";
+  nextBtn.style.display = "none";
+  
+  // Update progress to 100%
+  progressFill.style.width = "100%";
+  
+  // Show review section
+  if (reviewSection) {
+    reviewSection.classList.remove("hidden");
+    
+    // Populate review answers
+    const reviewContainer = document.getElementById("quiz-review-answers");
+    if (reviewContainer) {
+      reviewContainer.innerHTML = "";
+      
+      userAnswers.forEach((answer, index) => {
+        const reviewItem = document.createElement("div");
+        reviewItem.className = "quiz-review-item";
+        reviewItem.innerHTML = `
+          <div class="quiz-review-question">
+            <span class="quiz-review-qnum">Q${index + 1}:</span>
+            <span class="quiz-review-qtext">${answer.questionText}</span>
+          </div>
+          <div class="quiz-review-answer">
+            <strong>Your Answer:</strong> ${answer.selectedText}
+          </div>
+        `;
+        reviewContainer.appendChild(reviewItem);
+      });
+    }
+    
+    // Scroll to review section
+    setTimeout(() => {
+      reviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
+  
+  quizCompleted = true;
+}
+
+function editAnswers() {
+  // Reset to first question
+  currentIndex = 0;
+  
+  // Show quiz question section again
+  const questionBox = document.querySelector(".quiz-question-box");
+  const optionsContainer = document.getElementById("quiz-options");
+  const nextBtn = document.getElementById("quiz-next-btn");
+  
+  if (questionBox) questionBox.style.display = "block";
+  if (optionsContainer) optionsContainer.style.display = "block";
+  if (nextBtn) {
+    nextBtn.style.display = "block";
+    nextBtn.disabled = true;
+  }
+  
+  // Hide review section
+  const reviewSection = document.getElementById("quiz-review");
+  if (reviewSection) {
+    reviewSection.classList.add("hidden");
+  }
+  
+  // Hide result section if visible
+  const resultSection = document.getElementById("quiz-result");
+  if (resultSection) {
+    resultSection.classList.add("hidden");
+  }
+  
+  // Re-render first question
+  renderQuestion();
+  
+  // Scroll to top of quiz
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function calculateAndShowResults() {
+  // Calculate trait counts from user answers
+  selectedTraitCounts = { analytical: 0, creative: 0, social: 0, practical: 0 };
+  userAnswers.forEach(answer => {
+    selectedTraitCounts[answer.trait] += 1;
+  });
+
   const progressFill = document.getElementById("quiz-progress-fill");
   progressFill.style.width = "100%";
 
   const resultEl = document.getElementById("quiz-result");
   const resultTextEl = document.getElementById("quiz-result-text");
-  const nextBtn = document.getElementById("quiz-next-btn");
+  const reviewSection = document.getElementById("quiz-review");
 
-  nextBtn.disabled = true;
-  nextBtn.textContent = "Quiz Completed";
+  // Hide review section
+  if (reviewSection) {
+    reviewSection.classList.add("hidden");
+  }
 
   let bestTrait = "analytical";
   let bestScore = -1;
@@ -258,7 +377,15 @@ function submitQuizResults() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(results)
+      body: JSON.stringify({
+        analytical_score: results.traits.analytical,
+        creative_score: results.traits.creative,
+        social_score: results.traits.social,
+        practical_score: results.traits.practical,
+        dominant_trait: results.dominant_trait,
+        time_taken: results.time_taken,
+        total_questions: results.total_questions
+      })
     })
     .then(response => response.json())
     .then(data => {
@@ -310,7 +437,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!nextBtn) return;
   nextBtn.addEventListener("click", handleNextQuestion);
   
-  // Add submit button event listener
+  // Review section buttons
+  const reviewEditBtn = document.getElementById("quiz-review-edit-btn");
+  if (reviewEditBtn) {
+    reviewEditBtn.addEventListener("click", editAnswers);
+  }
+  
+  const reviewSubmitBtn = document.getElementById("quiz-submit-review-btn");
+  if (reviewSubmitBtn) {
+    reviewSubmitBtn.addEventListener("click", () => {
+      // Calculate and show results
+      calculateAndShowResults();
+    });
+  }
+  
+  // Add submit button event listener (for submitting results to server)
   const submitBtn = document.getElementById("quiz-submit-btn");
   if (submitBtn) {
     submitBtn.addEventListener("click", submitQuizResults);

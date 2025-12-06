@@ -113,6 +113,12 @@ body.home-body {
     padding: 32px 24px 24px;
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
     text-align: center;
+    transition: all 0.3s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
 }
 
 .home-card-icon-circle {
@@ -151,6 +157,12 @@ body.home-body {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.home-card-link:hover {
+    color: #0ea5e9;
+    transform: translateX(4px);
 }
 
 .home-card-link .arrow {
@@ -366,6 +378,24 @@ body.splash-body {
     margin-top: 16px;
     font-size: 12px;
     color: #6b7280;
+}
+
+.auth-error-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    border: 1px solid #ef4444;
+    text-align: left;
+}
+
+.auth-error-message svg {
+    flex-shrink: 0;
 }
 
 /* Signup specific grid layout */
@@ -928,6 +958,102 @@ body.splash-body {
     border: 1px solid #ef4444;
 }
 
+/* Quiz Review Section */
+.quiz-review {
+    margin-top: 24px;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 18px;
+    border: 2px solid #e5e7eb;
+}
+
+.quiz-review-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #0f172a;
+    text-align: center;
+}
+
+.quiz-review-subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.quiz-review-answers {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.quiz-review-item {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.quiz-review-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #38bdf8;
+}
+
+.quiz-review-question {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.quiz-review-qnum {
+    font-weight: 600;
+    color: #38bdf8;
+}
+
+.quiz-review-qtext {
+    flex: 1;
+}
+
+.quiz-review-answer {
+    font-size: 13px;
+    color: #4b5563;
+    padding-left: 24px;
+}
+
+.quiz-review-answer strong {
+    color: #0f172a;
+}
+
+.quiz-review-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.quiz-review-edit-btn {
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quiz-review-edit-btn:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+}
+
 @media (max-width: 800px) {
     .quiz-traits-grid,
     .quiz-careers-grid {
@@ -982,6 +1108,12 @@ body.splash-body {
     background: #f0f9f9;
     border-radius: 18px;
     padding: 16px 18px 18px;
+    transition: all 0.2s ease;
+}
+
+.consult-profile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .consult-profile-top {
@@ -1042,6 +1174,20 @@ body.splash-body {
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+
+.consult-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+}
+
+.consult-btn:active {
+    transform: translateY(0);
 }
 
 @media (max-width: 900px) {
@@ -1096,11 +1242,21 @@ body.splash-body {
     background: #f9fafb;
     cursor: pointer;
     text-align: left;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.book-consultant-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #38bdf8;
 }
 
 .book-consultant-card.active {
     border-color: #38bdf8;
     background: #e0f7f4;
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.2);
 }
 
 .book-consultant-avatar {
@@ -1157,15 +1313,36 @@ body.splash-body {
     padding: 16px 18px 18px;
 }
 
+.book-selected-counselors {
+    margin-bottom: 16px;
+}
+
+.book-selected-counselors .book-with-label {
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    display: block;
+}
+
 .book-with-card {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     padding: 10px 12px;
     border-radius: 14px;
     background: linear-gradient(135deg, #7dd3fc, #a5f3fc);
     color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.book-with-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+.book-with-card:last-child {
+    margin-bottom: 16px;
 }
 
 .book-with-label {
@@ -1239,6 +1416,17 @@ body.splash-body {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+.book-confirm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+}
+
+.book-confirm-btn:active {
+    transform: translateY(0);
 }
 
 .book-confirm-message {

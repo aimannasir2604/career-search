@@ -5,6 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Book Appointment</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .book-counselor-slot {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .book-counselor-slot:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.1);
+        }
+        
+        .book-counselor-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .book-counselor-slot-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0;
+        }
+        
+        .book-time-slot-error {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 8px;
+            font-size: 12px;
+            display: none;
+        }
+        
+        .book-time-slot-error.show {
+            display: block;
+        }
+        
+        .book-review-section {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+        
+        .book-review-item {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .book-review-counselor {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .book-review-details {
+            margin-left: 44px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+        
+        .book-review-details strong {
+            color: #0f172a;
+        }
+        
+        .book-comments-field {
+            margin-top: 20px;
+        }
+        
+        .book-comments-field textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .book-comments-field textarea:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        }
+    </style>
 </head>
 <body class="home-body">
     <header class="home-header">
@@ -18,51 +117,101 @@
 
     <main class="book-main">
         <section class="book-card">
-            <div class="book-layout">
-                <!-- Left column: select consultant -->
-                <div class="book-left">
-                    <h2 class="book-section-title">Select Consultant</h2>
-                    <div class="book-consultant-list">
-                        {% for cid, c in counselors.items() %}
-                        <a
-                            href="{{ url_for('book_appointment', counselor_id=c.id) }}"
-                            class="book-consultant-card {% if c.id == selected.id %}active{% endif %}"
-                        >
-                            <div class="book-consultant-avatar">{{ c.initials }}</div>
-                            <div class="book-consultant-info">
-                                <div class="book-consultant-name">{{ c.name }}</div>
-                                <div class="book-consultant-role">{{ c.role }}</div>
-                                <div class="book-consultant-exp">{{ c.experience }}</div>
-                                <div class="book-consultant-avail">
-                                    <span class="label">Available:</span> {{ c.availability }}
-                                </div>
-                            </div>
-                        </a>
-                        {% endfor %}
+            {% if not confirmed %}
+            <h2 class="book-section-title" style="text-align: center; margin-bottom: 24px;">Schedule Your Appointments</h2>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="book-confirm-message" style="background: #fee2e2; color: #991b1b; border-color: #ef4444; margin-bottom: 20px;">
+                        {{ message }}
                     </div>
-                </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="post" id="booking-form" class="book-form">
+                {% if selected_counselors %}
+                    {% for c in selected_counselors %}
+                    <div class="book-counselor-slot" data-counselor-id="{{ c.id }}">
+                        <div class="book-counselor-header">
+                            <div class="book-consultant-avatar">{{ c.initials }}</div>
+                            <div>
+                                <h3 class="book-counselor-slot-title">{{ c.name }}</h3>
+                                <div class="book-consultant-role">{{ c.role }}</div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="counselor_ids" value="{{ c.id }}" />
+                        
+                        <div class="book-field-group">
+                            <label for="date_{{ c.id }}">Select Date</label>
+                            <input 
+                                type="date" 
+                                id="date_{{ c.id }}" 
+                                name="date_{{ c.id }}" 
+                                class="counselor-date-input"
+                                required 
+                                min="{{ today_date }}"
+                                data-counselor-id="{{ c.id }}"
+                            />
+                        </div>
 
-                <!-- Right column: appointment details -->
-                <div class="book-right">
-                    <h2 class="book-section-title">Appointment Details</h2>
+                        <div class="book-field-group">
+                            <label for="time_{{ c.id }}">Select Time Slot</label>
+                            <select 
+                                id="time_{{ c.id }}" 
+                                name="time_{{ c.id }}" 
+                                class="counselor-time-input"
+                                required
+                                data-counselor-id="{{ c.id }}"
+                            >
+                                <option value="">Choose a time slot</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:30 AM">10:30 AM</option>
+                                <option value="12:00 PM">12:00 PM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:30 PM">03:30 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                            </select>
+                            <div class="book-time-slot-error" id="error_{{ c.id }}">
+                                This time slot is already booked for another counselor
+                            </div>
+                        </div>
 
-                    <div class="book-with-card">
-                        <div class="book-consultant-avatar small">{{ selected.initials }}</div>
-                        <div>
-                            <div class="book-with-label">Booking with</div>
-                            <div class="book-consultant-name">{{ selected.name }}</div>
+                        <div class="book-field-group">
+                            <label>Consultation Mode</label>
+                            <div class="book-mode-toggle">
+                                <label class="mode-option">
+                                    <input type="radio" name="mode_{{ c.id }}" value="video" checked />
+                                    <span>Video Call</span>
+                                </label>
+                                <label class="mode-option">
+                                    <input type="radio" name="mode_{{ c.id }}" value="audio" />
+                                    <span>Audio Call</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-
-                    <form method="post" class="book-form">
+                    {% endfor %}
+                {% else %}
+                    <div class="book-counselor-slot">
+                        <div class="book-counselor-header">
+                            <div class="book-consultant-avatar">{{ selected.initials }}</div>
+                            <div>
+                                <h3 class="book-counselor-slot-title">{{ selected.name }}</h3>
+                                <div class="book-consultant-role">{{ selected.role }}</div>
+                            </div>
+                        </div>
+                        
                         <div class="book-field-group">
                             <label for="date">Select Date</label>
-                            <input type="date" id="date" name="date" required />
+                            <input type="date" id="date" name="date" class="single-date-input" required min="{{ today_date }}" />
                         </div>
 
                         <div class="book-field-group">
-                            <label for="time">Select Time</label>
-                            <select id="time" name="time" required>
+                            <label for="time">Select Time Slot</label>
+                            <select id="time" name="time" class="single-time-input" required>
                                 <option value="">Choose a time slot</option>
                                 <option value="09:00 AM">09:00 AM</option>
                                 <option value="10:30 AM">10:30 AM</option>
@@ -86,25 +235,245 @@
                                 </label>
                             </div>
                         </div>
+                    </div>
+                {% endif %}
 
-                        <button type="submit" class="book-confirm-btn">
-                            Confirm Booking
-                        </button>
+                <div class="book-comments-field">
+                    <label for="comments">Additional Comments (Optional)</label>
+                    <textarea 
+                        id="comments" 
+                        name="comments" 
+                        placeholder="Any additional information or questions you'd like to share..."
+                        rows="3"
+                    ></textarea>
+                </div>
 
-                        {% if confirmed %}
-                        <div class="book-confirm-message">
-                            Your appointment with <strong>{{ selected.name }}</strong> on
-                            <strong>{{ selected_date }}</strong> at
-                            <strong>{{ selected_time }}</strong> ({{ mode|capitalize }} Call)
-                            has been booked.
+                <!-- Review Section -->
+                <div class="book-review-section">
+                    <h3 class="book-section-title" style="margin-bottom: 16px;">Review Your Bookings</h3>
+                    <div id="booking-review">
+                        <p style="color: #6b7280; font-size: 14px;">Please fill in all appointment details above to see the review.</p>
+                    </div>
+                </div>
+
+                <input type="hidden" name="confirm" value="true" />
+                <button type="submit" class="book-confirm-btn" id="final-submit-btn" disabled>
+                    Confirm All Bookings
+                </button>
+            </form>
+            {% else %}
+            <!-- Confirmation Page -->
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white;">
+                    ✓
+                </div>
+                <h2 style="font-size: 24px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">Booking Confirmed!</h2>
+                <p style="color: #6b7280; margin-bottom: 32px;">Your appointment(s) have been successfully booked.</p>
+                
+                <div style="max-width: 600px; margin: 0 auto;">
+                    {% for booking in bookings %}
+                    <div class="book-review-item" style="text-align: left;">
+                        <div class="book-review-counselor">
+                            <div class="book-consultant-avatar">{{ booking.counselor.initials }}</div>
+                            <div>
+                                <div class="book-consultant-name">{{ booking.counselor.name }}</div>
+                                <div class="book-consultant-role">{{ booking.counselor.role }}</div>
+                            </div>
                         </div>
-                        {% endif %}
-                    </form>
+                        <div class="book-review-details">
+                            <div><strong>Date:</strong> {{ booking.date_formatted }}</div>
+                            <div><strong>Time:</strong> {{ booking.time }}</div>
+                            <div><strong>Mode:</strong> {{ booking.mode|capitalize }} Call</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if comments %}
+                    <div class="book-review-item" style="text-align: left;">
+                        <div style="font-weight: 600; margin-bottom: 8px; color: #0f172a;">Your Comments:</div>
+                        <div style="color: #4b5563; font-size: 14px;">{{ comments }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div style="margin-top: 32px;">
+                    <a href="{{ url_for('home') }}" class="book-confirm-btn" style="display: inline-block; text-decoration: none; max-width: 300px;">
+                        Back to Home
+                    </a>
                 </div>
             </div>
+            {% endif %}
         </section>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('booking-form');
+            if (!form) return;
+            
+            const timeInputs = document.querySelectorAll('.counselor-time-input, .single-time-input');
+            const dateInputs = document.querySelectorAll('.counselor-date-input, .single-date-input');
+            const reviewDiv = document.getElementById('booking-review');
+            const submitBtn = document.getElementById('final-submit-btn');
+            
+            let selectedSlots = {}; // Track selected date+time combinations
+            
+            function validateTimeSlots() {
+                selectedSlots = {};
+                let hasError = false;
+                
+                // Reset all errors
+                document.querySelectorAll('.book-time-slot-error').forEach(err => {
+                    err.classList.remove('show');
+                });
+                
+                // Check each counselor's selection (multi-counselor)
+                document.querySelectorAll('.counselor-time-input').forEach(timeInput => {
+                    const counselorId = timeInput.dataset.counselorId;
+                    const dateInput = document.getElementById(`date_${counselorId}`);
+                    
+                    if (dateInput && timeInput.value && dateInput.value) {
+                        const slotKey = `${dateInput.value}_${timeInput.value}`;
+                        
+                        if (selectedSlots[slotKey]) {
+                            // Time slot conflict
+                            const errorDiv = document.getElementById(`error_${counselorId}`);
+                            if (errorDiv) {
+                                errorDiv.classList.add('show');
+                            }
+                            hasError = true;
+                        } else {
+                            selectedSlots[slotKey] = counselorId;
+                        }
+                    }
+                });
+                
+                return !hasError;
+            }
+            
+            function updateReview() {
+                if (!reviewDiv) return;
+                
+                const bookings = [];
+                const counselorSlots = document.querySelectorAll('.book-counselor-slot');
+                
+                // Handle multi-counselor selection
+                if (counselorSlots.length > 0 && counselorSlots[0].dataset.counselorId) {
+                    counselorSlots.forEach(slot => {
+                        const counselorId = slot.dataset.counselorId;
+                        const dateInput = document.getElementById(`date_${counselorId}`);
+                        const timeInput = document.getElementById(`time_${counselorId}`);
+                        const modeInput = slot.querySelector(`input[name="mode_${counselorId}"]:checked`);
+                        const counselorName = slot.querySelector('.book-counselor-slot-title').textContent;
+                        const counselorRole = slot.querySelector('.book-consultant-role').textContent;
+                        const counselorInitials = slot.querySelector('.book-consultant-avatar').textContent;
+                        
+                        if (dateInput && timeInput && dateInput.value && timeInput.value) {
+                            bookings.push({
+                                counselor: {
+                                    id: counselorId,
+                                    name: counselorName,
+                                    role: counselorRole,
+                                    initials: counselorInitials
+                                },
+                                date: dateInput.value,
+                                time: timeInput.value,
+                                mode: modeInput ? modeInput.value : 'video'
+                            });
+                        }
+                    });
+                } else {
+                    // Handle single counselor selection
+                    const dateInput = document.getElementById('date');
+                    const timeInput = document.getElementById('time');
+                    const modeInput = document.querySelector('input[name="mode"]:checked');
+                    const counselorName = document.querySelector('.book-counselor-slot-title')?.textContent;
+                    const counselorRole = document.querySelector('.book-consultant-role')?.textContent;
+                    const counselorInitials = document.querySelector('.book-consultant-avatar')?.textContent;
+                    
+                    if (dateInput && timeInput && dateInput.value && timeInput.value && counselorName) {
+                        bookings.push({
+                            counselor: {
+                                name: counselorName,
+                                role: counselorRole,
+                                initials: counselorInitials
+                            },
+                            date: dateInput.value,
+                            time: timeInput.value,
+                            mode: modeInput ? modeInput.value : 'video'
+                        });
+                    }
+                }
+                
+                if (bookings.length === 0) {
+                    reviewDiv.innerHTML = '<p style="color: #6b7280; font-size: 14px;">Please fill in all appointment details above to see the review.</p>';
+                    if (submitBtn) submitBtn.disabled = true;
+                    return;
+                }
+                
+                // Check if all counselors have selections
+                const totalCounselors = counselorSlots.length || 1;
+                const allFilled = bookings.length === totalCounselors;
+                
+                if (allFilled && validateTimeSlots()) {
+                    reviewDiv.innerHTML = bookings.map((booking, index) => `
+                        <div class="book-review-item">
+                            <div class="book-review-counselor">
+                                <div class="book-consultant-avatar">${booking.counselor.initials}</div>
+                                <div>
+                                    <div class="book-consultant-name">${booking.counselor.name}</div>
+                                    <div class="book-consultant-role">${booking.counselor.role}</div>
+                                </div>
+                            </div>
+                            <div class="book-review-details">
+                                <div><strong>Date:</strong> ${new Date(booking.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                                <div><strong>Time:</strong> ${booking.time}</div>
+                                <div><strong>Mode:</strong> ${booking.mode.charAt(0).toUpperCase() + booking.mode.slice(1)} Call</div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    if (submitBtn) submitBtn.disabled = false;
+                } else {
+                    reviewDiv.innerHTML = '<p style="color: #ef4444; font-size: 14px;">Please fill in all appointment details and ensure no time slot conflicts.</p>';
+                    if (submitBtn) submitBtn.disabled = true;
+                }
+            }
+            
+            // Add event listeners
+            timeInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    validateTimeSlots();
+                    updateReview();
+                });
+            });
+            
+            dateInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    validateTimeSlots();
+                    updateReview();
+                });
+            });
+            
+            // Listen to mode changes
+            document.querySelectorAll('input[type="radio"][name^="mode"]').forEach(radio => {
+                radio.addEventListener('change', updateReview);
+            });
+            
+            // Initial validation
+            updateReview();
+            
+            // Form submission validation
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (counselorSlots.length > 1 && !validateTimeSlots()) {
+                        e.preventDefault();
+                        alert('Please resolve time slot conflicts before submitting.');
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
-
-

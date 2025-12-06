@@ -9,7 +9,8 @@
         .admin-panel {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 40px 40px 60px;
+            background: linear-gradient(180deg, #f3fafb 0%, #ffffff 50%, #f3fafb 100%);
         }
         
         .admin-tabs {
@@ -17,6 +18,7 @@
             gap: 12px;
             margin-bottom: 24px;
             border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0;
         }
         
         .admin-tab {
@@ -28,16 +30,19 @@
             font-size: 15px;
             font-weight: 500;
             color: #6b7280;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            border-radius: 8px 8px 0 0;
         }
         
         .admin-tab:hover {
             color: #38bdf8;
+            background: rgba(56, 189, 248, 0.05);
         }
         
         .admin-tab.active {
             color: #38bdf8;
             border-bottom-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.08);
         }
         
         .admin-tab-content {
@@ -50,9 +55,9 @@
         
         .admin-card {
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            padding: 28px 32px 32px;
             margin-bottom: 24px;
         }
         
@@ -74,16 +79,22 @@
             background: linear-gradient(135deg, #7dd3fc, #a5f3fc);
             color: #ffffff;
             border: none;
-            border-radius: 8px;
+            border-radius: 999px;
             padding: 10px 20px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
         }
         
         .admin-btn-primary:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+        }
+        
+        .admin-btn-primary:active {
+            transform: translateY(0);
         }
         
         .admin-table {
@@ -109,6 +120,10 @@
             color: #4b5563;
         }
         
+        .admin-table tr {
+            transition: background-color 0.2s ease;
+        }
+        
         .admin-table tr:hover {
             background: #f9fafb;
         }
@@ -116,24 +131,38 @@
         .admin-btn-icon {
             background: transparent;
             border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 6px 10px;
+            border-radius: 999px;
+            padding: 6px 12px;
             cursor: pointer;
             margin-right: 6px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .admin-btn-icon:hover {
-            background: #f3f4f6;
-            border-color: #d1d5db;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .admin-btn-edit {
             color: #38bdf8;
+            border-color: #38bdf8;
+        }
+        
+        .admin-btn-edit:hover {
+            background: #ecfeff;
+            border-color: #38bdf8;
         }
         
         .admin-btn-delete {
             color: #ef4444;
+            border-color: #ef4444;
+        }
+        
+        .admin-btn-delete:hover {
+            background: #fef2f2;
+            border-color: #ef4444;
         }
         
         .admin-modal {
@@ -144,9 +173,11 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         
         .admin-modal.active {
@@ -155,10 +186,11 @@
         
         .admin-modal-content {
             background: #ffffff;
-            border-radius: 16px;
-            padding: 32px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            padding: 32px 40px;
             max-width: 600px;
-            width: 90%;
+            width: 100%;
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -180,9 +212,21 @@
         .admin-modal-close {
             background: transparent;
             border: none;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
             color: #6b7280;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .admin-modal-close:hover {
+            background: #f3f4f6;
+            color: #0f172a;
         }
         
         .admin-form-group {
@@ -191,25 +235,34 @@
         
         .admin-form-label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            color: #374151;
+            color: #4b5563;
             margin-bottom: 8px;
         }
         
         .admin-form-input {
             width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+            font-family: inherit;
         }
         
         .admin-form-input:focus {
             border-color: #38bdf8;
             box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+            background: #ffffff;
+        }
+        
+        textarea.admin-form-input {
+            border-radius: 12px;
+            resize: vertical;
+            min-height: 60px;
         }
         
         .admin-form-actions {
@@ -220,20 +273,28 @@
         }
         
         .admin-btn-secondary {
-            background: #f3f4f6;
+            background: #ffffff;
             color: #374151;
-            border: none;
-            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
             padding: 10px 20px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .admin-btn-secondary:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
         }
         
         .admin-empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #6b7280;
+            font-size: 14px;
         }
         
         .admin-empty-state-icon {
@@ -243,19 +304,23 @@
         
         .admin-message {
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 20px;
             font-size: 14px;
+            font-weight: 500;
+            border: 1px solid;
         }
         
         .admin-message.success {
             background: #d1fae5;
             color: #065f46;
+            border-color: #10b981;
         }
         
         .admin-message.error {
             background: #fee2e2;
             color: #991b1b;
+            border-color: #ef4444;
         }
     </style>
 </head>
@@ -343,12 +408,13 @@
                             <th>Role</th>
                             <th>Specialization</th>
                             <th>Availability</th>
+                            <th>Experience</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="consultants-table-body">
                         <tr>
-                            <td colspan="6" class="admin-empty-state">Loading...</td>
+                            <td colspan="7" class="admin-empty-state">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -427,7 +493,8 @@
                 </div>
                 <div class="admin-form-group">
                     <label class="admin-form-label">Availability</label>
-                    <input type="text" id="consultant-availability" class="admin-form-input" placeholder="e.g., Mon–Fri, 9 AM – 5 PM" required />
+                    <textarea id="consultant-availability" class="admin-form-input" rows="2" placeholder="e.g., Mon–Fri, 9 AM – 5 PM" required></textarea>
+                    <small style="color: #6b7280; font-size: 12px;">Enter availability schedule (e.g., Mon–Fri, 9 AM – 5 PM)</small>
                 </div>
                 <div class="admin-form-group">
                     <label class="admin-form-label">Experience</label>
@@ -487,7 +554,7 @@
                 .then(consultants => {
                     const tbody = document.getElementById('consultants-table-body');
                     if (consultants.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6" class="admin-empty-state">No consultants yet. Click "Add Consultant" to get started.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="7" class="admin-empty-state">No consultants yet. Click "Add Consultant" to get started.</td></tr>';
                         return;
                     }
                     
@@ -498,6 +565,7 @@
                             <td>${escapeHtml(c.role)}</td>
                             <td>${escapeHtml(c.specialization)}</td>
                             <td>${escapeHtml(c.availability)}</td>
+                            <td>${escapeHtml(c.experience)}</td>
                             <td>
                                 <button class="admin-btn-icon admin-btn-edit" onclick="editConsultant(${c.id})">Edit</button>
                                 <button class="admin-btn-icon admin-btn-delete" onclick="deleteConsultant(${c.id})">Delete</button>
@@ -508,7 +576,7 @@
                 .catch(error => {
                     console.error('Error loading consultants:', error);
                     document.getElementById('consultants-table-body').innerHTML = 
-                        '<tr><td colspan="6" class="admin-empty-state">Error loading consultants</td></tr>';
+                        '<tr><td colspan="7" class="admin-empty-state">Error loading consultants</td></tr>';
                 });
         }
 
@@ -527,9 +595,12 @@
                 document.getElementById('consultant-specialization').value = consultant.specialization;
                 document.getElementById('consultant-availability').value = consultant.availability;
                 document.getElementById('consultant-experience').value = consultant.experience;
+                // Disable counselor_id editing when updating
+                document.getElementById('consultant-counselor-id').disabled = true;
             } else {
                 title.textContent = 'Add Consultant';
                 form.reset();
+                document.getElementById('consultant-counselor-id').disabled = false;
             }
             
             modal.classList.add('active');
@@ -599,8 +670,9 @@
         document.getElementById('consultant-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const counselorIdInput = document.getElementById('consultant-counselor-id');
             const data = {
-                counselor_id: document.getElementById('consultant-counselor-id').value.trim(),
+                counselor_id: counselorIdInput.value.trim(),
                 initials: document.getElementById('consultant-initials').value.trim(),
                 name: document.getElementById('consultant-name').value.trim(),
                 role: document.getElementById('consultant-role').value.trim(),
@@ -608,6 +680,11 @@
                 availability: document.getElementById('consultant-availability').value.trim(),
                 experience: document.getElementById('consultant-experience').value.trim()
             };
+            
+            // Re-enable disabled field before submission
+            if (counselorIdInput.disabled) {
+                counselorIdInput.disabled = false;
+            }
             
             try {
                 let response;

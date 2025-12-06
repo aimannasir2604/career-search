@@ -5,6 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Consult Our Experts</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .consult-profile-selectable {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .consult-profile-selectable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .consult-checkbox-label {
+            display: block;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .consult-checkbox {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .consult-checkbox-custom {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .consult-checkbox:checked + .consult-checkbox-custom {
+            background: linear-gradient(135deg, #7dd3fc, #a5f3fc);
+            border-color: #38bdf8;
+        }
+        
+        .consult-checkbox:checked + .consult-checkbox-custom::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .consult-checkbox:checked ~ .consult-profile-content {
+            background: #e0f7f4;
+            border: 2px solid #38bdf8;
+        }
+        
+        .consult-profile-content {
+            transition: all 0.2s ease;
+        }
+        
+        .consult-actions {
+            margin-top: 24px;
+            text-align: center;
+            padding-top: 24px;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .consult-btn-submit {
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+        
+        .consult-btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+        }
+        
+        .consult-btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .consult-selection-hint {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
 </head>
 <body class="home-body">
     <header class="home-header">
@@ -20,90 +113,68 @@
                 Book a one-on-one session with our experienced career counselors.
             </p>
 
-            <div class="consult-grid">
-                <article class="consult-profile">
-                    <div class="consult-profile-top">
-                        <div class="consult-avatar">SJ</div>
-                        <div>
-                            <div class="consult-name">Dr. Sarah Johnson</div>
-                            <div class="consult-role">PhD in Career Counseling</div>
-                            <div class="consult-exp-badge">15+ years experience</div>
-                        </div>
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Specialization:</strong> Career Guidance &amp; Planning
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Available:</strong> Mon–Fri, 9 AM – 5 PM
-                    </div>
-                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='sj') }}">
-                        Book Appointment
-                    </a>
-                </article>
-
-                <article class="consult-profile">
-                    <div class="consult-profile-top">
-                        <div class="consult-avatar">MC</div>
-                        <div>
-                            <div class="consult-name">Dr. Rizwan Javed</div>
-                            <div class="consult-role">MSc Psychology</div>
-                            <div class="consult-exp-badge">12+ years experience</div>
-                        </div>
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Specialization:</strong> Student Development
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Available:</strong> Tue–Sat, 10 AM – 6 PM
-                    </div>
-                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='mc') }}">
-                        Book Appointment
-                    </a>
-                </article>
-
-                <article class="consult-profile">
-                    <div class="consult-profile-top">
-                        <div class="consult-avatar">ER</div>
-                        <div>
-                            <div class="consult-name">Dr. Emily Rodriguez</div>
-                            <div class="consult-role">PhD in Educational Psychology</div>
-                            <div class="consult-exp-badge">10+ years experience</div>
-                        </div>
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Specialization:</strong> Academic &amp; Career Counseling
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Available:</strong> Mon–Thu, 2 PM – 8 PM
-                    </div>
-                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='er') }}">
-                        Book Appointment
-                    </a>
-                </article>
-
-                <article class="consult-profile">
-                    <div class="consult-profile-top">
-                        <div class="consult-avatar">JW</div>
-                        <div>
-                            <div class="consult-name">Dr. James Williams</div>
-                            <div class="consult-role">MBA &amp; Career Coach Certification</div>
-                            <div class="consult-exp-badge">8+ years experience</div>
-                        </div>
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Specialization:</strong> Industry Insights &amp; Planning
-                    </div>
-                    <div class="consult-detail">
-                        <strong>Available:</strong> Wed–Sun, 11 AM – 7 PM
-                    </div>
-                    <a class="consult-btn" href="{{ url_for('book_appointment', counselor_id='jw') }}">
-                        Book Appointment
-                    </a>
-                </article>
-            </div>
+            <form id="consultation-form" method="post" action="{{ url_for('book_appointment', counselor_id='multi') }}">
+                <div class="consult-grid">
+                    {% for cid, c in counselors.items() %}
+                    <article class="consult-profile consult-profile-selectable">
+                        <label class="consult-checkbox-label">
+                            <input type="checkbox" name="counselor_ids" value="{{ c.id }}" class="consult-checkbox" />
+                            <div class="consult-checkbox-custom"></div>
+                            <div class="consult-profile-content">
+                                <div class="consult-profile-top">
+                                    <div class="consult-avatar">{{ c.initials }}</div>
+                                    <div>
+                                        <div class="consult-name">{{ c.name }}</div>
+                                        <div class="consult-role">{{ c.role }}</div>
+                                        <div class="consult-exp-badge">{{ c.experience }}</div>
+                                    </div>
+                                </div>
+                                <div class="consult-detail">
+                                    <strong>Specialization:</strong> {{ c.specialization }}
+                                </div>
+                                <div class="consult-detail">
+                                    <strong>Available:</strong> {{ c.availability }}
+                                </div>
+                            </div>
+                        </label>
+                    </article>
+                    {% endfor %}
+                </div>
+                
+                <div class="consult-actions">
+                    <button type="submit" class="consult-btn consult-btn-submit" id="book-selected-btn" disabled>
+                        Book Selected Counsellors
+                    </button>
+                    <p class="consult-selection-hint">Select one or more counsellors to book appointments</p>
+                </div>
+            </form>
             
         </section>
     </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.consult-checkbox');
+            const submitBtn = document.getElementById('book-selected-btn');
+            
+            function updateSubmitButton() {
+                const checked = document.querySelectorAll('.consult-checkbox:checked');
+                if (checked.length > 0) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = `Book ${checked.length} Selected Counsellor${checked.length > 1 ? 's' : ''}`;
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Book Selected Counsellors';
+                }
+            }
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSubmitButton);
+            });
+            
+            updateSubmitButton();
+        });
+    </script>
 </body>
 </html>
 

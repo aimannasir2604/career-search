@@ -32,6 +32,7 @@ instance/
 *.db
 *.sqlite
 *.sqlite3
+instance/*.db
 
 # IDE
 .vscode/
